@@ -1,6 +1,5 @@
 *.swp
 .DS_store
-linux.*
-alpine.*
-debian.*
-ubuntu.*
+*.img
+*.dir
+*.qcow2
