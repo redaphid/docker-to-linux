@@ -9,5 +9,6 @@ RUN apt-get -y install \
     parted \
     pv \
     grub-efi-amd64 \
-    linux-image-amd64
+    linux-image-amd64 \
+    rsync    
 

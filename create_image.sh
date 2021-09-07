@@ -35,23 +35,30 @@ losetup -D
 #EFI partition
 echo_blue "\n[Format EFI partition]"
 EFI_LOOP=$(losetup -f)
+EFI_DIR=/os/mnt/efi
 echo -e "\n[Using ${EFI_LOOP} loop device for EFI]"
 losetup -o $(numfmt --from iec-i 1Mi) ${EFI_LOOP} $DISK
 mkfs.vfat ${EFI_LOOP}
 
-mkdir -p /os/mnt/efi
-mount -t auto ${EFI_LOOP} /os/mnt/efi
-mkdir /os/mnt/efi/EFI
+mkdir -p $EFI_DIR
+mount -t auto ${EFI_LOOP} $EFI_DIR
+mkdir $EFI_DIR/EFI
+ls -alh $EFI_DIR
 
 
 
 #root partition
 ROOT_LOOP=$(losetup -f)
+ROOT_DIR=/os/mnt/root
+
 echo -e "\n[Using ${ROOT_LOOP} loop device for root]"
 losetup -o $EFI_OFFSET ${ROOT_LOOP} $DISK
-mkdir -p /os/mnt/root
-mount -t auto ${ROOT_LOOP} /os/mnt/root
-ls -alh /os/mnt/root
+mkdir -p $ROOT_DIR
+mount -t auto ${ROOT_LOOP} $ROOT_DIR
+
+ls /
+rsync -ax / $ROOT_DIR
+ls -alh $ROOT_DIR
 exit 1
 
 echo_blue "[Copy ${DISTR} directory structure to partition]"
