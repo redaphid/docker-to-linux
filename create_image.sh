@@ -30,16 +30,34 @@ parted --script $DISK \
 
 fdisk -l $DISK
 
-echo_blue "\n[Format partition with ext4]"
 losetup -D
-LOOPDEVICE=$(losetup -f)
-echo -e "\n[Using ${LOOPDEVICE} loop device]"
-losetup -o $(expr 512 \* 2048) ${LOOPDEVICE} $DISK
-mkfs.vfat ${LOOPDEVICE}
+
+#EFI partition
+echo_blue "\n[Format EFI partition]"
+EFI_LOOP=$(losetup -f)
+echo -e "\n[Using ${EFI_LOOP} loop device for EFI]"
+losetup -o $(numfmt --from iec-i 1Mi) ${EFI_LOOP} $DISK
+mkfs.vfat ${EFI_LOOP}
+
+mkdir -p /os/mnt/efi
+mount -t auto ${EFI_LOOP} /os/mnt/efi
+mkdir /os/mnt/efi/EFI
+
+
+
+#root partition
+ROOT_LOOP=$(losetup -f)
+echo -e "\n[Using ${ROOT_LOOP} loop device for root]"
+losetup -o $EFI_OFFSET ${ROOT_LOOP} $DISK
+mkdir -p /os/mnt/root
+mount -t auto ${ROOT_LOOP} /os/mnt/root
+ls -alh /os/mnt/root
+exit 1
 
 echo_blue "[Copy ${DISTR} directory structure to partition]"
-mkdir -p /os/mnt
-mount -t auto ${LOOPDEVICE} /os/mnt/
+
+
+
 cp -R /os/${DISTR}.dir/. /os/mnt/
 
 echo_blue "[Setup extlinux]"
