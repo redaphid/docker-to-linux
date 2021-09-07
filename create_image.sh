@@ -11,17 +11,31 @@ echo_blue() {
 }
 
 echo_blue "[Create disk image]"
-dd if=/dev/zero of=/os/${DISTR}.img bs=$(expr 4 \* 1024 \* 1024 \* 1024) count=1
+DISK=/os/${DISTR}.img
+
+EFI_SIZE=512Mi
+EFI_OFFSET=`expr $(numfmt --from iec-i 1Mi) \+ $(numfmt --from iec-i $EFI_SIZE)`
+EFI_OFFSET_HUMAN=`expr $(numfmt --to iec-i $EFI_OFFSET)`
+echo $EFI_OFFSET
+echo $EFI_OFFSET_HUMAN
+
+truncate -s 4G $DISK
 
 echo_blue "[Make partition]"
-sfdisk /os/${DISTR}.img < /os/partition.txt
+parted --script $DISK \
+    mklabel gpt \
+    mkpart "EFI" fat32 1Mi $EFI_SIZE \
+    set 1 esp on \
+    mkpart "rootfs" ext4 $EFI_OFFSET_HUMAN 100%
+
+fdisk -l $DISK
 
 echo_blue "\n[Format partition with ext4]"
 losetup -D
 LOOPDEVICE=$(losetup -f)
 echo -e "\n[Using ${LOOPDEVICE} loop device]"
-losetup -o $(expr 512 \* 2048) ${LOOPDEVICE} /os/${DISTR}.img
-mkfs.ext4 ${LOOPDEVICE}
+losetup -o $(expr 512 \* 2048) ${LOOPDEVICE} $DISK
+mkfs.fat32 ${LOOPDEVICE}
 
 echo_blue "[Copy ${DISTR} directory structure to partition]"
 mkdir -p /os/mnt
@@ -37,7 +51,7 @@ umount /os/mnt
 losetup -D
 
 echo_blue "[Write syslinux MBR]"
-dd if=/usr/lib/syslinux/mbr/mbr.bin of=/os/${DISTR}.img bs=440 count=1 conv=notrunc
+dd if=/usr/lib/syslinux/mbr/mbr.bin of=$DISK bs=440 count=1 conv=notrunc
 
 echo_blue "[Convert to qcow2]"
-qemu-img convert -c /os/${DISTR}.img -O qcow2 /os/${DISTR}.qcow2
+qemu-img convert -c $DISK -O qcow2 /os/${DISTR}.qcow2

@@ -35,9 +35,7 @@ alpine: alpine.img
 .PHONY:
 builder:
 	@echo ${COL_GRN}"[Ensure builder is ready]"${COL_END}
-	@if [ "`docker images -q ${REPO}/builder`" = '' ]; then\
-		docker build -f Dockerfile -t ${REPO}/builder .;\
-	fi
+	docker build -f Dockerfile -t ${REPO}/builder .
 
 .PHONY:
 builder-interactive:
