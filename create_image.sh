@@ -35,7 +35,7 @@ losetup -D
 LOOPDEVICE=$(losetup -f)
 echo -e "\n[Using ${LOOPDEVICE} loop device]"
 losetup -o $(expr 512 \* 2048) ${LOOPDEVICE} $DISK
-mkfs.fat32 ${LOOPDEVICE}
+mkfs.vfat ${LOOPDEVICE}
 
 echo_blue "[Copy ${DISTR} directory structure to partition]"
 mkdir -p /os/mnt
