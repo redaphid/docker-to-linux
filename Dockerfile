@@ -8,7 +8,11 @@ RUN apt-get -y install \
     qemu-utils \
     parted \
     pv \
+    uuid \
+    tree \
     grub-efi-amd64 \
     linux-image-amd64 \
-    rsync    
-
+    rsync \    
+    xorriso \    
+    mtools \
+    refind \
